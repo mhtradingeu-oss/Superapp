@@ -1,5 +1,4 @@
-📘 08_backend_init_plan.md
-Back-end Init Plan (Step-by-Step)
+Back-end Init Plan (Step-by-Step).
 
 هذا المستند يعرّف خطوات إنشاء البنية الأساسية للـ Back-end في مشروع
 MH-OS SUPERAPP
