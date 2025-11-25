@@ -1,3 +1,11 @@
 {
-  "files.exclude": {}
+  "files.exclude": {
+    "node_modules/": "explorerExcludedFiles",
+    "dist/": "explorerExcludedFiles",
+    ".env": "explorerExcludedFiles",
+    ".DS_Store": "explorerExcludedFiles",
+    "*.log": "explorerExcludedFiles",
+    "front-end/.next/": "explorerExcludedFiles",
+    "front-end/out/": "explorerExcludedFiles"
+  }
 }

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+front-end/.next/
+front-end/out/
