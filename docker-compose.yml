@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: os-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: osdev
+      POSTGRES_USER: osuser
+      POSTGRES_PASSWORD: ospassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - osdb_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: os-backend
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_started
+    env_file:
+      - ./back-end/.env
+    ports:
+      - "4000:4000"
+
+volumes:
+  osdb_data:

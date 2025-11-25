@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./crm.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createCrmSchema, updateCrmSchema } from "./crm.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('crm:read'), controller.list);
+router.get("/:id", requirePermission('crm:read'), controller.getById);
+router.post("/", requirePermission('crm:create'), validateBody(createCrmSchema), controller.create);
+router.put("/:id", requirePermission('crm:update'), validateBody(updateCrmSchema), controller.update);
+router.delete("/:id", requirePermission('crm:delete'), controller.remove);
+
+export { router };

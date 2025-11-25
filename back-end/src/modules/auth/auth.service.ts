@@ -14,8 +14,9 @@ export const authService = {
     const user = await prisma.user.create({
       data: {
         email: input.email,
-        passwordHash,
-        name: input.name,
+        // Prisma schema uses `password` field; store the hashed password there
+        password: passwordHash,
+        // `User` model in schema doesn't include `name` field; omit it
         role: "USER",
         status: "ACTIVE",
       },
@@ -31,7 +32,7 @@ export const authService = {
       throw unauthorized("Invalid credentials");
     }
 
-    const match = await verifyPassword(input.password, user.passwordHash);
+    const match = await verifyPassword(input.password, user.password);
     if (!match) {
       throw unauthorized("Invalid credentials");
     }
@@ -41,7 +42,7 @@ export const authService = {
   },
 };
 
-function sanitizeUser(user: { passwordHash?: string } & Record<string, any>) {
-  const { passwordHash, ...rest } = user;
+function sanitizeUser(user: { password?: string } & Record<string, any>) {
+  const { password, ...rest } = user;
   return rest;
 }

@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./white-label.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createWhiteLabelSchema, updateWhiteLabelSchema } from "./white-label.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('white-label:read'), controller.list);
+router.get("/:id", requirePermission('white-label:read'), controller.getById);
+router.post("/", requirePermission('white-label:create'), validateBody(createWhiteLabelSchema), controller.create);
+router.put("/:id", requirePermission('white-label:update'), validateBody(updateWhiteLabelSchema), controller.update);
+router.delete("/:id", requirePermission('white-label:delete'), controller.remove);
+
+export { router };

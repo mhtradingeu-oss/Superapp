@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./operations.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createOperationsSchema, updateOperationsSchema } from "./operations.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('operations:read'), controller.list);
+router.get("/:id", requirePermission('operations:read'), controller.getById);
+router.post("/", requirePermission('operations:create'), validateBody(createOperationsSchema), controller.create);
+router.put("/:id", requirePermission('operations:update'), validateBody(updateOperationsSchema), controller.update);
+router.delete("/:id", requirePermission('operations:delete'), controller.remove);
+
+export { router };

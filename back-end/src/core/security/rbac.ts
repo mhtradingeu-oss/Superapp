@@ -14,3 +14,10 @@ export function hasPermission(user: UserLike, required: string[]) {
   if (permissions.includes("*")) return true;
   return required.some((p) => permissions.includes(p));
 }
+
+export function requirePermission(permission: string) {
+  return (_req: import("express").Request, _res: import("express").Response, next: import("express").NextFunction) => {
+    // TODO: check JWT + user permissions when authGuard attaches user
+    return next();
+  };
+}

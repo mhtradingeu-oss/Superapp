@@ -1,14 +1,15 @@
 import { EventEmitter } from "events";
 
-export type AppEvent = {
-  name: string;
-  payload: Record<string, unknown>;
-};
+export type EventHandler = (payload: unknown) => Promise<void> | void;
 
-class EventBus extends EventEmitter {
-  emitEvent(event: AppEvent) {
-    this.emit(event.name, event.payload);
-  }
+const bus = new EventEmitter();
+
+export async function publish(eventName: string, payload: unknown): Promise<void> {
+  bus.emit(eventName, payload);
 }
 
-export const eventBus = new EventBus();
+export function subscribe(eventName: string, handler: EventHandler): void {
+  bus.on(eventName, (payload) => {
+    void handler(payload);
+  });
+}
