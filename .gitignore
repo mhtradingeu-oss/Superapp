@@ -5,3 +5,5 @@ dist/
 *.log
 front-end/.next/
 front-end/out/
+node_modules/
+.DS_Store
