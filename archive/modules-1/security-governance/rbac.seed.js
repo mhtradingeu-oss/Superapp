@@ -1,0 +1,185 @@
+import { prisma } from "../../core/prisma.js";
+import { hashPassword } from "../../core/security/password.js";
+import { env } from "../../core/config/env.js";
+const basePermissionCodes = [
+    "auth:me",
+    "admin:create",
+    "admin:read",
+    "admin:update",
+    "admin:delete",
+    "affiliate:create",
+    "affiliate:read",
+    "affiliate:update",
+    "affiliate:delete",
+    "ai-brain:create",
+    "ai-brain:read",
+    "ai-brain:update",
+    "ai-brain:delete",
+    "automation:create",
+    "automation:read",
+    "automation:update",
+    "automation:delete",
+    "brand:create",
+    "brand:read",
+    "brand:update",
+    "brand:delete",
+    "communication:create",
+    "communication:read",
+    "communication:update",
+    "communication:delete",
+    "crm:create",
+    "crm:read",
+    "crm:update",
+    "crm:delete",
+    "dealers:create",
+    "dealers:read",
+    "dealers:update",
+    "dealers:delete",
+    "finance:create",
+    "finance:read",
+    "finance:update",
+    "finance:delete",
+    "inventory:create",
+    "inventory:read",
+    "inventory:update",
+    "inventory:delete",
+    "knowledge-base:create",
+    "knowledge-base:read",
+    "knowledge-base:update",
+    "knowledge-base:delete",
+    "loyalty:create",
+    "loyalty:read",
+    "loyalty:update",
+    "loyalty:delete",
+    "marketing:create",
+    "marketing:read",
+    "marketing:update",
+    "marketing:delete",
+    "operations:create",
+    "operations:read",
+    "operations:update",
+    "operations:delete",
+    "partners:create",
+    "partners:read",
+    "partners:update",
+    "partners:delete",
+    "pricing:create",
+    "pricing:read",
+    "pricing:update",
+    "pricing:delete",
+    "product:create",
+    "product:read",
+    "product:update",
+    "product:delete",
+    "sales-reps:create",
+    "sales-reps:read",
+    "sales-reps:update",
+    "sales-reps:delete",
+    "security-governance:create",
+    "security-governance:read",
+    "security-governance:update",
+    "security-governance:delete",
+    "social-intelligence:create",
+    "social-intelligence:read",
+    "social-intelligence:update",
+    "social-intelligence:delete",
+    "stand:create",
+    "stand:read",
+    "stand:update",
+    "stand:delete",
+    "support:create",
+    "support:read",
+    "support:update",
+    "support:delete",
+    "users:create",
+    "users:read",
+    "users:update",
+    "users:delete",
+    "white-label:create",
+    "white-label:read",
+    "white-label:update",
+    "white-label:delete",
+];
+const permissionCodes = Array.from(new Set(basePermissionCodes));
+const baseRoles = [
+    {
+        name: "SUPER_ADMIN",
+        description: "Full platform control",
+        permissions: permissionCodes,
+    },
+    {
+        name: "ADMIN",
+        description: "Administrative access across modules",
+        permissions: permissionCodes,
+    },
+    {
+        name: "USER",
+        description: "Standard user with self-service scope",
+        permissions: ["auth:me"],
+    },
+];
+export async function seedRBAC() {
+    const permissions = await Promise.all(permissionCodes.map((code) => prisma.permission.upsert({
+        where: { code },
+        update: {},
+        create: { code, description: code },
+    })));
+    const permissionMap = new Map(permissions.map((p) => [p.code, p.id]));
+    for (const role of baseRoles) {
+        const roleRecord = await prisma.role.upsert({
+            where: { name: role.name },
+            update: { description: role.description },
+            create: { name: role.name, description: role.description },
+        });
+        for (const code of role.permissions) {
+            const permissionId = permissionMap.get(code);
+            if (!permissionId)
+                continue;
+            const existing = await prisma.rolePermission.findFirst({
+                where: { roleId: roleRecord.id, permissionId },
+            });
+            if (!existing) {
+                await prisma.rolePermission.create({
+                    data: { roleId: roleRecord.id, permissionId },
+                });
+            }
+        }
+    }
+    await ensureAdminUser();
+}
+async function ensureAdminUser() {
+    const adminEmail = env.ADMIN_EMAIL;
+    const adminPassword = env.ADMIN_PASSWORD;
+    const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+    if (existing) {
+        if (existing.role !== "SUPER_ADMIN" || existing.status !== "ACTIVE") {
+            await prisma.user.update({
+                where: { id: existing.id },
+                data: { role: "SUPER_ADMIN", status: "ACTIVE" },
+            });
+        }
+        return;
+    }
+    const passwordHash = await hashPassword(adminPassword);
+    await prisma.user.create({
+        data: {
+            email: adminEmail,
+            password: passwordHash,
+            role: "SUPER_ADMIN",
+            status: "ACTIVE",
+        },
+    });
+}
+if (process.argv[1]?.match(/rbac\.seed\.(ts|js)$/)) {
+    seedRBAC()
+        .then(async () => {
+        console.log("✅ RBAC seed completed");
+        await prisma.$disconnect();
+        process.exit(0);
+    })
+        .catch(async (err) => {
+        console.error("❌ RBAC seed failed", err);
+        await prisma.$disconnect();
+        process.exit(1);
+    });
+}

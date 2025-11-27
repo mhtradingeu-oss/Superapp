@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import { ai_brainService } from "./ai-brain.service.js";
+import { ai_brainService, aiBrainInsightsService } from "./ai-brain.service.js";
+import { aiOrchestrator } from "../../core/ai/orchestrator.js";
 
 export async function list(_req: Request, res: Response, next: NextFunction) {
   try {
@@ -41,6 +42,27 @@ export async function remove(req: Request, res: Response, next: NextFunction) {
   try {
     await ai_brainService.remove(req.params.id);
     res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function insights(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await aiBrainInsightsService.summarize({
+      brandName: req.body.brandName ?? "Brand",
+      highlights: req.body.highlights ?? "No highlights",
+    });
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function assistantChat(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await aiOrchestrator.assistantChat({ message: req.body.message, brandId: req.body.brandId });
+    res.json(result.result ?? result);
   } catch (err) {
     next(err);
   }

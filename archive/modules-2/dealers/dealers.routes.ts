@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./dealers.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createDealersSchema, updateDealersSchema } from "./dealers.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('dealers:read'), controller.list);
+router.get("/:id", requirePermission('dealers:read'), controller.getById);
+router.post("/", requirePermission('dealers:create'), validateBody(createDealersSchema), controller.create);
+router.put("/:id", requirePermission('dealers:update'), validateBody(updateDealersSchema), controller.update);
+router.delete("/:id", requirePermission('dealers:delete'), controller.remove);
+
+export { router };

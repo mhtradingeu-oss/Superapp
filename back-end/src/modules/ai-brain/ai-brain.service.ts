@@ -1,4 +1,6 @@
 import type { CreateAiBrainInput, UpdateAiBrainInput } from "./ai-brain.types.js";
+import { orchestrateAI, makeCacheKey } from "../../core/ai/aiOrchestrator.js";
+import { insightsPrompt } from "../../core/ai/promptTemplates.js";
 
 export const ai_brainService = {
   async list() {
@@ -24,5 +26,23 @@ export const ai_brainService = {
   async remove(id: string) {
     // TODO: delete record
     return { id };
+  },
+};
+
+export const aiBrainInsightsService = {
+  async summarize(payload: { brandName: string; highlights: string }) {
+    const prompt = insightsPrompt(payload);
+    const cacheKey = makeCacheKey("ai-insights", payload);
+    const response = await orchestrateAI({
+      key: cacheKey,
+      prompt,
+      fallback: () => ({
+        pricingHealth: "Stable",
+        marketingSummary: "No AI available, using fallback",
+        inventoryRisk: "Unknown",
+        nextActions: ["Review pricing weekly", "Launch one campaign"],
+      }),
+    });
+    return response.result;
   },
 };

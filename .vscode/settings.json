@@ -6,6 +6,8 @@
     ".DS_Store": "explorerExcludedFiles",
     "*.log": "explorerExcludedFiles",
     "front-end/.next/": "explorerExcludedFiles",
-    "front-end/out/": "explorerExcludedFiles"
+    "front-end/out/": "explorerExcludedFiles",
+    "front-end/.env.local": "explorerExcludedFiles",
+    "back-end/.env": "explorerExcludedFiles"
   }
 }

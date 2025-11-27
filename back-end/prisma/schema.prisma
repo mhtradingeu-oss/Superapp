@@ -1,6 +1,5 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-arm64-openssl-1.1.x"]
 }
 
 datasource db {
@@ -28,6 +27,7 @@ model User {
   ticketMessages    TicketMessage[]
   loyaltyCustomers  LoyaltyCustomer[]
   loyaltyTransactions LoyaltyTransaction[]
+  activityLogs      ActivityLog[]
 }
 
 model Role {
@@ -172,6 +172,7 @@ model Brand {
   automationWorkflows    AutomationWorkflow[]
   automationLogs         AutomationLog[]
   scheduledJobs          ScheduledJob[]
+  activityLogs           ActivityLog[]
   notifications          Notification[]
   notificationChannels   NotificationChannel[]
   notificationTemplates  NotificationTemplate[]
@@ -760,9 +761,13 @@ model SalesRep {
   visits      SalesVisit[]
   quotes      SalesQuote[]
   orders      SalesOrder[]
+  leads       SalesLead[]
+  accounts    SalesAccount[]
   targets     SalesRepTarget[]
   performance SalesRepPerformanceSnapshot[]
   commissions SalesRepCommissionRecord[]
+  commissionLogs SalesCommissionLog[]
+  kpiSnapshots SalesRepKpiSnapshot[]
   tasks       SalesRepTask[]
 }
 
@@ -969,6 +974,79 @@ model SalesRepTask {
   rep       SalesRep @relation(fields: [repId], references: [id])
 }
 
+model SalesLead {
+  id          String    @id @default(cuid())
+  brandId     String?
+  repId       String
+  leadId      String?
+  companyId   String?
+  territoryId String?
+  source      String?
+  score       Decimal?
+  stage       String?
+  status      String    @default("OPEN")
+  nextAction  String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  rep        SalesRep     @relation(fields: [repId], references: [id])
+  @@index([brandId])
+  @@index([repId])
+  @@index([territoryId])
+}
+
+model SalesAccount {
+  id              String       @id @default(cuid())
+  brandId         String?
+  name            String
+  companyId       String?
+  standPartnerId  String?
+  assignedRepId   String?
+  region          String?
+  status          String       @default("ACTIVE")
+  lastInteractionAt DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  assignedRep     SalesRep?    @relation(fields: [assignedRepId], references: [id])
+  @@index([brandId])
+  @@index([assignedRepId])
+}
+
+model SalesCommissionLog {
+  id        String    @id @default(cuid())
+  brandId   String?
+  repId     String
+  orderId   String?
+  rate      Decimal?
+  earned    Decimal?
+  period    String?
+  status    String?
+  paidAt    DateTime?
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  rep       SalesRep  @relation(fields: [repId], references: [id])
+  @@index([brandId])
+  @@index([repId])
+}
+
+model SalesRepKpiSnapshot {
+  id        String    @id @default(cuid())
+  brandId   String?
+  repId     String
+  period    String?
+  metricsJson String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  rep       SalesRep  @relation(fields: [repId], references: [id])
+  @@index([brandId])
+  @@index([repId])
+}
+
 // ========== Partner / Dealer / Stand ==========
 model Partner {
   id              String            @id @default(cuid())
@@ -1113,11 +1191,58 @@ model StandPartner {
   orders          StandOrder[]
   rewards         StandReward[]
   aiInsights      StandAIInsight[]
+  stands          Stand[]
+  loyaltyLedgers  StandLoyaltyLedger[]
+  bonusTriggers   StandBonusTrigger[]
+}
+
+model Stand {
+  id                     String                     @id @default(cuid())
+  brandId                String?
+  standPartnerId         String
+  name                   String
+  description            String?
+  standType              String?
+  status                 String                     @default("ACTIVE")
+  createdAt              DateTime                   @default(now())
+  updatedAt              DateTime                   @updatedAt
+
+  standPartner           StandPartner               @relation(fields: [standPartnerId], references: [id])
+  locations              StandLocation[]
+  standUnits             StandUnit[]
+  orders                 StandOrder[]
+  packages               StandPackage[]
+  refillOrders           StandRefillOrder[]
+  performanceSnapshots   StandPerformanceSnapshot[]
+  @@index([brandId])
+  @@index([standPartnerId])
+}
+
+model StandLocation {
+  id                   String                  @id @default(cuid())
+  standId              String
+  name                 String
+  address              String?
+  city                 String?
+  country              String?
+  region               String?
+  geoLocationJson      String?
+  status               String                  @default("ACTIVE")
+  qrCodeUrl            String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  stand                Stand                   @relation(fields: [standId], references: [id])
+  inventories          StandInventory[]
+  orders               StandOrder[]
+  @@index([standId])
+  @@index([city, country])
 }
 
 model StandUnit {
   id                 String    @id @default(cuid())
   standPartnerId     String
+  standId            String?
   code               String?
   locationDescription String?
   status             String?   @default("ACTIVE")
@@ -1125,22 +1250,29 @@ model StandUnit {
   updatedAt          DateTime  @updatedAt
 
   standPartner       StandPartner @relation(fields: [standPartnerId], references: [id])
+  stand              Stand?        @relation(fields: [standId], references: [id])
   inventories        StandInventory[]
   snapshots          StandInventorySnapshot[]
   activities         StandActivityLog[]
   salesRecords       StandSalesRecord[]
+  @@index([standId])
 }
 
 model StandInventory {
   id         String       @id @default(cuid())
   standUnitId String
+  standLocationId String?
   productId  String
   quantity   Int          @default(0)
+  status     String?      @default("ACTIVE")
+  lastRefillAt DateTime?
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
   standUnit  StandUnit    @relation(fields: [standUnitId], references: [id])
+  standLocation StandLocation? @relation(fields: [standLocationId], references: [id])
   product    BrandProduct @relation(fields: [productId], references: [id])
+  @@index([standLocationId])
 }
 
 model StandInventorySnapshot {
@@ -1158,6 +1290,8 @@ model StandOrder {
   id             String         @id @default(cuid())
   brandId        String?
   standPartnerId String
+  standId        String?
+  standLocationId String?
   status         String?
   total          Decimal?
   createdAt      DateTime       @default(now())
@@ -1165,7 +1299,12 @@ model StandOrder {
 
   brand          Brand?         @relation(fields: [brandId], references: [id])
   standPartner   StandPartner   @relation(fields: [standPartnerId], references: [id])
+  stand          Stand?         @relation(fields: [standId], references: [id])
+  standLocation  StandLocation? @relation(fields: [standLocationId], references: [id])
   items          StandOrderItem[]
+  orderSource    String?
+  @@index([standId])
+  @@index([standLocationId])
 }
 
 model StandOrderItem {
@@ -1225,6 +1364,111 @@ model StandAIInsight {
   updatedAt    DateTime  @updatedAt
 
   standPartner StandPartner @relation(fields: [standPartnerId], references: [id])
+}
+
+model StandPackage {
+  id                     String   @id @default(cuid())
+  brandId                String?
+  standId                String?
+  name                   String
+  description            String?
+  inventoryThresholdsJson String?
+  pricingJson            String?
+  allowedProductsJson    String?
+  status                 String   @default("ACTIVE")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  stand                  Stand?   @relation(fields: [standId], references: [id])
+  @@index([brandId])
+  @@index([standId])
+}
+
+model StandLoyaltyLedger {
+  id             String    @id @default(cuid())
+  standPartnerId String
+  standId        String?
+  tierId         String?
+  points         Int       @default(0)
+  bonusEvents    Int       @default(0)
+  balance        Int       @default(0)
+  lastAdjustedAt DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  standPartner   StandPartner @relation(fields: [standPartnerId], references: [id])
+  @@index([standPartnerId])
+  @@index([standId])
+}
+
+model StandBonusTrigger {
+  id             String    @id @default(cuid())
+  standPartnerId String
+  standId        String?
+  eventType      String
+  bonusAmount    Decimal?
+  approvedById   String?
+  status         String    @default("PENDING")
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  standPartner   StandPartner @relation(fields: [standPartnerId], references: [id])
+  @@index([standPartnerId])
+  @@index([standId])
+}
+
+model StandPerformanceSnapshot {
+  id              String    @id @default(cuid())
+  brandId         String?
+  standId         String?
+  standLocationId String?
+  period          String?
+  metricsJson     String?
+  note            String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  stand           Stand?           @relation(fields: [standId], references: [id])
+  @@index([brandId])
+  @@index([standId])
+  @@index([standLocationId])
+}
+
+model StandRefillOrder {
+  id              String    @id @default(cuid())
+  brandId         String?
+  standId         String?
+  standLocationId String?
+  partnerId       String?
+  status          String    @default("PLANNED")
+  expectedAt      DateTime?
+  completedAt     DateTime?
+  carrierInfoJson String?
+  source          String?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  stand           Stand?    @relation(fields: [standId], references: [id])
+  items           StandRefillItem[]
+  @@index([brandId])
+  @@index([standId])
+  @@index([standLocationId])
+}
+
+model StandRefillItem {
+  id            String       @id @default(cuid())
+  refillOrderId String
+  productId     String
+  quantity      Int
+  cost          Decimal?
+  refillSource  String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  refillOrder   StandRefillOrder @relation(fields: [refillOrderId], references: [id])
 }
 
 // ========== Affiliate ==========
@@ -1875,14 +2119,34 @@ model AutomationRule {
   id            String   @id @default(cuid())
   brandId       String?
   name          String
+  description   String?
+  triggerType   String   @default("event")
   triggerEvent  String?
-  conditionsJson String?
-  actionsJson   String?
+  triggerConfigJson String?
+  conditionConfigJson String?
+  actionsConfigJson   String?
   enabled       Boolean  @default(true)
+  createdById   String?
+  updatedById   String?
+  lastRunAt     DateTime?
+  lastRunStatus String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   brand         Brand?   @relation(fields: [brandId], references: [id])
+  executionLogs AutomationExecutionLog[]
+}
+
+model AutomationExecutionLog {
+  id          String   @id @default(cuid())
+  ruleId      String
+  eventName   String?
+  status      String
+  resultJson  String?
+  errorMessage String?
+  runAt       DateTime @default(now())
+
+  rule        AutomationRule @relation(fields: [ruleId], references: [id])
 }
 
 model AutomationWorkflow {
@@ -1911,6 +2175,21 @@ model AutomationLog {
   brand      Brand?   @relation(fields: [brandId], references: [id])
 }
 
+model ActivityLog {
+  id          String   @id @default(cuid())
+  brandId     String?
+  userId      String?
+  module      String?
+  type        String
+  source      String?
+  severity    String?
+  metaJson    String?
+  createdAt   DateTime @default(now())
+
+  brand       Brand?   @relation(fields: [brandId], references: [id])
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
 model ScheduledJob {
   id            String   @id @default(cuid())
   brandId       String?
@@ -1931,10 +2210,14 @@ model Notification {
   brandId   String?
   userId    String?
   channel   String
+  type      String?
   title     String
   body      String
-  status    String?
+  status    String?  @default("unread")
   metaJson  String?
+  dataJson  String?
+  readAt    DateTime?
+  archivedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as controller from "./partners.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createPartnersSchema, updatePartnersSchema } from "./partners.validators.js";
+const router = Router();
+router.get("/", requirePermission('partners:read'), controller.list);
+router.get("/:id", requirePermission('partners:read'), controller.getById);
+router.post("/", requirePermission('partners:create'), validateBody(createPartnersSchema), controller.create);
+router.put("/:id", requirePermission('partners:update'), validateBody(updatePartnersSchema), controller.update);
+router.delete("/:id", requirePermission('partners:delete'), controller.remove);
+export { router };

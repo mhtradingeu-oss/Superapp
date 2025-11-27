@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+<html lang="de" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAIROTICMEN Partner Dashboard</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="HAIROTICMEN Partner Dashboard - Manage your beauty business">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <!-- External Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="dashboard-theme" data-theme="light">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="brand-logo">
+                <i class="fas fa-crown"></i>
+                <h2>HAIROTICMEN</h2>
+            </div>
+            <div class="loading-spinner"></div>
+            <p>Loading Partner Dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-app" class="dashboard-app">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <i class="fas fa-crown"></i>
+                    <span class="brand-text">HAIROTICMEN</span>
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="sidebar-body">
+                <!-- User Profile Section -->
+                <div class="user-profile">
+                    <div class="user-avatar">
+                        <i class="fas fa-user-crown"></i>
+                    </div>
+                    <div class="user-info">
+                        <h4 class="user-name">Max Mustermann</h4>
+                        <span class="user-role">Premium Partner</span>
+                        <div class="user-stats">
+                            <span class="points">
+                                <i class="fas fa-coins"></i>
+                                2,450 Points
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Menu -->
+                <nav class="nav-menu">
+                    <ul class="menu-list">
+                        <!-- Dashboard Overview -->
+                        <li class="menu-item">
+                            <a href="#dashboard" class="menu-link active" data-section="dashboard">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+
+                        <!-- Orders Management -->
+                        <li class="menu-item has-submenu">
+                            <a href="#" class="menu-link" data-toggle="submenu">
+                                <i class="fas fa-shopping-cart"></i>
+                                <span>Orders</span>
+                                <i class="fas fa-chevron-right submenu-arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a href="#order-management" class="submenu-link" data-section="order-management">Order Management</a></li>
+                                <li><a href="#order-tracking" class="submenu-link" data-section="order-tracking">Tracking</a></li>
+                                <li><a href="#reorder" class="submenu-link" data-section="reorder">Re-order</a></li>
+                                <li><a href="#scheduled-orders" class="submenu-link" data-section="scheduled-orders">Scheduled Orders</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Inventory -->
+                        <li class="menu-item">
+                            <a href="#inventory-management" class="menu-link" data-section="inventory-management">
+                                <i class="fas fa-boxes"></i>
+                                <span>Inventory</span>
+                            </a>
+                        </li>
+
+                        <!-- Programs -->
+                        <li class="menu-item has-submenu">
+                            <a href="#" class="menu-link" data-toggle="submenu">
+                                <i class="fas fa-star"></i>
+                                <span>Programs</span>
+                                <i class="fas fa-chevron-right submenu-arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a href="#loyalty-points" class="submenu-link" data-section="loyalty-points">Loyalty Program</a></li>
+                                <li><a href="#affiliate-dashboard" class="submenu-link" data-section="affiliate-dashboard">Affiliate Program</a></li>
+                                <li><a href="#stand-program" class="submenu-link" data-section="stand-program">Stand Program</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Sales & Partners -->
+                        <li class="menu-item has-submenu">
+                            <a href="#" class="menu-link" data-toggle="submenu">
+                                <i class="fas fa-handshake"></i>
+                                <span>Partners</span>
+                                <i class="fas fa-chevron-right submenu-arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a href="#sales-reps" class="submenu-link" data-section="sales-reps">Sales Reps</a></li>
+                                <li><a href="#dealers" class="submenu-link" data-section="dealers">Dealers</a></li>
+                                <li><a href="#authorizers" class="submenu-link" data-section="authorizers">Authorizers</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Analytics -->
+                        <li class="menu-item has-submenu">
+                            <a href="#" class="menu-link" data-toggle="submenu">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Analytics</span>
+                                <i class="fas fa-chevron-right submenu-arrow"></i>
+                            </a>
+                            <ul class="submenu">
+                                <li><a href="#quick-analytics" class="submenu-link" data-section="quick-analytics">Quick Analytics</a></li>
+                                <li><a href="#performance-reports" class="submenu-link" data-section="performance-reports">Performance</a></li>
+                                <li><a href="#referral-tracking" class="submenu-link" data-section="referral-tracking">Referral Tracking</a></li>
+                            </ul>
+                        </li>
+
+                        <!-- Discounts & Offers -->
+                        <li class="menu-item">
+                            <a href="#discount-tiers" class="menu-link" data-section="discount-tiers">
+                                <i class="fas fa-tags"></i>
+                                <span>Discounts</span>
+                            </a>
+                        </li>
+
+                        <!-- Messages -->
+                        <li class="menu-item">
+                            <a href="#message-center" class="menu-link" data-section="message-center">
+                                <i class="fas fa-envelope"></i>
+                                <span>Messages</span>
+                                <span class="notification-badge">3</span>
+                            </a>
+                        </li>
+
+                        <!-- Settings -->
+                        <li class="menu-item">
+                            <a href="#system-settings" class="menu-link" data-section="system-settings">
+                                <i class="fas fa-cog"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+
+                        <!-- Help & Support -->
+                        <li class="menu-item">
+                            <a href="#help-support" class="menu-link" data-section="help-support">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Help & Support</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="quick-actions">
+                    <button class="action-btn" id="theme-toggle" title="Toggle Theme">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="action-btn" id="language-toggle" title="Language">
+                        <i class="fas fa-globe"></i>
+                    </button>
+                    <button class="action-btn" id="notifications-toggle" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+                <button class="logout-btn" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="breadcrumb">
+                        <i class="fas fa-home"></i>
+                        <span id="current-page-title">Dashboard</span>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search anything..." id="global-search">
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="language-selector">
+                        <select id="language-select">
+                            <option value="de">🇩🇪 DE</option>
+                            <option value="en">🇺🇸 EN</option>
+                            <option value="ar">🇸🇦 AR</option>
+                        </select>
+                    </div>
+                    
+                    <div class="header-profile">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="profile-info">
+                            <span class="profile-name">Max M.</span>
+                            <span class="profile-role">Premium</span>
+                        </div>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active" data-section="dashboard">
+                    <div class="section-header">
+                        <h1>Dashboard Overview</h1>
+                        <p>Welcome back! Here's your business performance at a glance.</p>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon revenue">
+                                <i class="fas fa-euro-sign"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>€24,580</h3>
+                                <p>Monthly Revenue</p>
+                                <span class="trend positive">+15.2%</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon orders">
+                                <i class="fas fa-shopping-bag"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>184</h3>
+                                <p>Total Orders</p>
+                                <span class="trend positive">+12.5%</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon points">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>2,450</h3>
+                                <p>Loyalty Points</p>
+                                <span class="trend neutral">+145</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon referrals">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="kpi-content">
+                                <h3>28</h3>
+                                <p>Referrals</p>
+                                <span class="trend positive">+8</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions-section">
+                        <h3>Quick Actions</h3>
+                        <div class="quick-actions-grid">
+                            <button class="quick-action-card" data-action="new-order">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>New Order</span>
+                            </button>
+                            <button class="quick-action-card" data-action="track-order">
+                                <i class="fas fa-truck"></i>
+                                <span>Track Orders</span>
+                            </button>
+                            <button class="quick-action-card" data-action="redeem-points">
+                                <i class="fas fa-gift"></i>
+                                <span>Redeem Points</span>
+                            </button>
+                            <button class="quick-action-card" data-action="request-quote">
+                                <i class="fas fa-file-invoice"></i>
+                                <span>Request Quote</span>
+                            </button>
+                            <button class="quick-action-card" data-action="marketing-materials">
+                                <i class="fas fa-download"></i>
+                                <span>Marketing Kit</span>
+                            </button>
+                            <button class="quick-action-card" data-action="contact-support">
+                                <i class="fas fa-headset"></i>
+                                <span>Support</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4>Sales Performance</h4>
+                                <select class="chart-period">
+                                    <option value="7d">Last 7 Days</option>
+                                    <option value="30d" selected>Last 30 Days</option>
+                                    <option value="90d">Last 90 Days</option>
+                                </select>
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-line"></i>
+                                <p>Sales chart will be rendered here</p>
+                            </div>
+                        </div>
+
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h4>Top Products</h4>
+                            </div>
+                            <div class="chart-placeholder">
+                                <i class="fas fa-chart-pie"></i>
+                                <p>Product distribution chart</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="activity-section">
+                        <h3>Recent Activity</h3>
+                        <div class="activity-feed">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Order #HM-2024-0156</strong> has been shipped</p>
+                                    <span class="activity-time">2 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-coins"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>145 points</strong> earned from referral</p>
+                                    <span class="activity-time">5 hours ago</span>
+                                </div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <p><strong>Gold Partner Status</strong> achieved!</p>
+                                    <span class="activity-time">1 day ago</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Other sections will be loaded dynamically -->
+                <div id="dynamic-content"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Modal Container -->
+    <div id="modal-container" class="modal-container"></div>
+
+    <!-- External Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="assets/script.js"></script>
+</body>
+</html>

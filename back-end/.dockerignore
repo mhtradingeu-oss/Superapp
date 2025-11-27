@@ -1,8 +1,9 @@
 node_modules
-dist
-.env
+6+7dist
 npm-debug.log
-Dockerfile
-docker-compose.yml
+.env
+.DS_Store
+coverage
+.turbo
 .git
-.gitignore
+     0

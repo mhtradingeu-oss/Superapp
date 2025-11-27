@@ -11,5 +11,6 @@ router.get("/:id", requirePermission('crm:read'), controller.getById);
 router.post("/", requirePermission('crm:create'), validateBody(createCrmSchema), controller.create);
 router.put("/:id", requirePermission('crm:update'), validateBody(updateCrmSchema), controller.update);
 router.delete("/:id", requirePermission('crm:delete'), controller.remove);
+router.post("/ai/score", requirePermission(['ai:crm','crm:update']), controller.aiScore);
 
 export { router };

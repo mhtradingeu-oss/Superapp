@@ -1,28 +1,189 @@
-import type { CreateUserInput, UpdateUserInput } from "./users.types.js";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "../../core/prisma.js";
+import { badRequest, notFound } from "../../core/http/errors.js";
+import { hashPassword } from "../../core/security/password.js";
+import { getPermissionsForRole } from "../../core/security/rbac.js";
+import { buildPagination } from "../../core/utils/pagination.js";
+import { emitUserCreated, emitUserDeleted, emitUserUpdated } from "./users.events.js";
+import type {
+  CreateUserInput,
+  ListUsersParams,
+  PaginatedUsers,
+  UpdateUserInput,
+  UserRecord,
+  UserRoleInfo,
+} from "./users.types.js";
 
-export const usersService = {
-  async list() {
-    // TODO: fetch users via Prisma
-    return [];
-  },
+const userSelect = {
+  id: true,
+  email: true,
+  role: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
 
-  async getById(id: string) {
-    // TODO: fetch user by id
-    return { id };
-  },
+class UsersService {
+  constructor(private readonly db = prisma) {}
 
-  async create(input: CreateUserInput) {
-    // TODO: create user
-    return { id: "new-user-id", ...input };
-  },
+  async list(params: ListUsersParams = {}): Promise<PaginatedUsers> {
+    const { search, role, status, page = 1, pageSize = 20 } = params;
+    const { skip, take } = buildPagination({ page, pageSize });
 
-  async update(id: string, input: UpdateUserInput) {
-    // TODO: update user
-    return { id, ...input };
-  },
+    const where: Prisma.UserWhereInput = {};
+    if (role) where.role = role;
+    if (status) where.status = status;
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { role: { contains: search, mode: "insensitive" } },
+        { status: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const [total, users] = await this.db.$transaction([
+      this.db.user.count({ where }),
+      this.db.user.findMany({ where, select: userSelect, orderBy: { createdAt: "desc" }, skip, take }),
+    ]);
+
+    const roleDetails = await this.fetchRoleDetails(users.map((user) => user.role));
+    const data = await Promise.all(users.map((user) => this.attachPermissions(user, roleDetails)));
+
+    return {
+      data,
+      total,
+      page,
+      pageSize: take,
+    };
+  }
+
+  async getById(id: string): Promise<UserRecord> {
+    const user = await this.db.user.findUnique({ where: { id }, select: userSelect });
+    if (!user) {
+      throw notFound("User not found");
+    }
+    const roleDetails = await this.fetchRoleDetails([user.role]);
+    return this.attachPermissions(user, roleDetails);
+  }
+
+  async create(input: CreateUserInput): Promise<UserRecord> {
+    const existing = await this.db.user.findUnique({ where: { email: input.email } });
+    if (existing) {
+      throw badRequest("Email already in use");
+    }
+
+    const role = input.role ?? "USER";
+    await this.ensureRole(role);
+
+    const passwordHash = await hashPassword(input.password);
+    const user = await this.db.user.create({
+      data: {
+        email: input.email,
+        password: passwordHash,
+        role,
+        status: input.status ?? "ACTIVE",
+      },
+      select: userSelect,
+    });
+
+    await emitUserCreated({ id: user.id, email: user.email });
+    const roleDetails = await this.fetchRoleDetails([user.role]);
+    return this.attachPermissions(user, roleDetails);
+  }
+
+  async update(id: string, input: UpdateUserInput): Promise<UserRecord> {
+    const user = await this.db.user.findUnique({ where: { id } });
+    if (!user) {
+      throw notFound("User not found");
+    }
+
+    const updates: Prisma.UserUpdateInput = {};
+
+    if (input.email && input.email !== user.email) {
+      const emailOwner = await this.db.user.findUnique({ where: { email: input.email } });
+      if (emailOwner && emailOwner.id !== id) {
+        throw badRequest("Email already in use");
+      }
+      updates.email = input.email;
+    }
+
+    if (input.password) {
+      updates.password = await hashPassword(input.password);
+    }
+
+    if (input.role && input.role !== user.role) {
+      await this.ensureRole(input.role);
+      updates.role = input.role;
+    }
+
+    if (input.status && input.status !== user.status) {
+      updates.status = input.status;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      const roleDetails = await this.fetchRoleDetails([user.role]);
+      return this.attachPermissions(
+        {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        },
+        roleDetails,
+      );
+    }
+
+    const updated = await this.db.user.update({
+      where: { id },
+      data: updates,
+      select: userSelect,
+    });
+
+    await emitUserUpdated({ id: updated.id, email: updated.email });
+    const roleDetails = await this.fetchRoleDetails([updated.role]);
+    return this.attachPermissions(updated, roleDetails);
+  }
 
   async remove(id: string) {
-    // TODO: delete user
+    const user = await this.db.user.findUnique({ where: { id }, select: { id: true, email: true } });
+    if (!user) {
+      throw notFound("User not found");
+    }
+
+    await this.db.user.delete({ where: { id } });
+    await emitUserDeleted({ id: user.id, email: user.email });
     return { id };
-  },
-};
+  }
+
+  private async ensureRole(role: string) {
+    const roleRecord = await this.db.role.findUnique({ where: { name: role } });
+    if (!roleRecord) {
+      throw badRequest(`Role ${role} is not provisioned`);
+    }
+  }
+
+  private async fetchRoleDetails(roleNames: string[]): Promise<Map<string, UserRoleInfo>> {
+    const uniqueRoles = Array.from(new Set(roleNames)).filter(Boolean);
+    if (!uniqueRoles.length) return new Map();
+
+    const roles = await this.db.role.findMany({
+      where: { name: { in: uniqueRoles } },
+      select: { name: true, description: true },
+    });
+
+    return new Map(roles.map((role) => [role.name, role]));
+  }
+
+  private async attachPermissions(user: Prisma.UserGetPayload<{ select: typeof userSelect }>, roleDetails: Map<string, UserRoleInfo>): Promise<UserRecord> {
+    const permissions = await getPermissionsForRole(user.role);
+    return {
+      ...user,
+      permissions,
+      roleDetails: roleDetails.get(user.role) ?? undefined,
+    };
+  }
+}
+
+export const usersService = new UsersService();

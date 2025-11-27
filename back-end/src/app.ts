@@ -13,6 +13,7 @@ import { sales_repsRouter } from "./modules/sales-reps/index.js";
 import { dealersRouter } from "./modules/dealers/index.js";
 import { partnersRouter } from "./modules/partners/index.js";
 import { standRouter } from "./modules/stand/index.js";
+import { stand_posRouter } from "./modules/stand-pos/index.js";
 import { affiliateRouter } from "./modules/affiliate/index.js";
 import { loyaltyRouter } from "./modules/loyalty/index.js";
 import { inventoryRouter } from "./modules/inventory/index.js";
@@ -27,6 +28,9 @@ import { ai_brainRouter } from "./modules/ai-brain/index.js";
 import { social_intelligenceRouter } from "./modules/social-intelligence/index.js";
 import { operationsRouter } from "./modules/operations/index.js";
 import { supportRouter } from "./modules/support/index.js";
+import { activityLogRouter } from "./modules/activity-log/index.js";
+import { notificationRouter } from "./modules/notification/index.js";
+import { platformOpsRouter } from "./modules/platform-ops/index.js";
 
 export function createApp() {
   const app = express();
@@ -49,6 +53,7 @@ export function createApp() {
   app.use("/api/v1/dealers", dealersRouter);
   app.use("/api/v1/partners", partnersRouter);
   app.use("/api/v1/stand", standRouter);
+  app.use("/api/v1/stand-pos", stand_posRouter);
   app.use("/api/v1/affiliate", affiliateRouter);
   app.use("/api/v1/loyalty", loyaltyRouter);
   app.use("/api/v1/inventory", inventoryRouter);
@@ -63,6 +68,9 @@ export function createApp() {
   app.use("/api/v1/social-intelligence", social_intelligenceRouter);
   app.use("/api/v1/operations", operationsRouter);
   app.use("/api/v1/support", supportRouter);
+  app.use("/api/v1/activity", activityLogRouter);
+  app.use("/api/v1/notifications", notificationRouter);
+  app.use("/api/v1/platform-ops", platformOpsRouter);
 
   app.use(errorHandler);
 

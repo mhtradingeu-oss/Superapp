@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as controller from "./security-governance.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createSecurityGovernanceSchema, updateSecurityGovernanceSchema } from "./security-governance.validators.js";
+const router = Router();
+router.get("/", requirePermission('security-governance:read'), controller.list);
+router.get("/:id", requirePermission('security-governance:read'), controller.getById);
+router.post("/", requirePermission('security-governance:create'), validateBody(createSecurityGovernanceSchema), controller.create);
+router.put("/:id", requirePermission('security-governance:update'), validateBody(updateSecurityGovernanceSchema), controller.update);
+router.delete("/:id", requirePermission('security-governance:delete'), controller.remove);
+export { router };

@@ -1,0 +1,46 @@
+import { inventoryService } from "./inventory.service.js";
+export async function list(_req, res, next) {
+    try {
+        const items = await inventoryService.list();
+        res.json(items);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+export async function getById(req, res, next) {
+    try {
+        const item = await inventoryService.getById(req.params.id);
+        res.json(item);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+export async function create(req, res, next) {
+    try {
+        const item = await inventoryService.create(req.body);
+        res.status(201).json(item);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+export async function update(req, res, next) {
+    try {
+        const item = await inventoryService.update(req.params.id, req.body);
+        res.json(item);
+    }
+    catch (err) {
+        next(err);
+    }
+}
+export async function remove(req, res, next) {
+    try {
+        await inventoryService.remove(req.params.id);
+        res.status(204).end();
+    }
+    catch (err) {
+        next(err);
+    }
+}

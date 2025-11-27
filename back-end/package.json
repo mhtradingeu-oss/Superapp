@@ -8,7 +8,11 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma": "prisma",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "seed:rbac:dist": "node dist/modules/security-governance/rbac.seed.js",
+    "seed:brand:hairoticmen:dist": "node dist/modules/brand/hairoticmen.seed.js",
+    "seed:rbac:local": "node --loader ts-node/esm --experimental-specifier-resolution=node ./src/modules/security-governance/rbac.seed.ts",
+    "seed:brand:hairoticmen": "node --loader ts-node/esm --experimental-specifier-resolution=node ./src/modules/brand/hairoticmen.seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.10.2",
@@ -22,8 +26,8 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
-    "@types/express": "^4.17.21",
     "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.11.17",
     "ts-node": "^10.9.2",

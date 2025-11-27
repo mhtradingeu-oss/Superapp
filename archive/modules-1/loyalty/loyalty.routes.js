@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as controller from "./loyalty.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createLoyaltySchema, updateLoyaltySchema } from "./loyalty.validators.js";
+const router = Router();
+router.get("/", requirePermission('loyalty:read'), controller.list);
+router.get("/:id", requirePermission('loyalty:read'), controller.getById);
+router.post("/", requirePermission('loyalty:create'), validateBody(createLoyaltySchema), controller.create);
+router.put("/:id", requirePermission('loyalty:update'), validateBody(updateLoyaltySchema), controller.update);
+router.delete("/:id", requirePermission('loyalty:delete'), controller.remove);
+export { router };

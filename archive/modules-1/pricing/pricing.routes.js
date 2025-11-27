@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as controller from "./pricing.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createPricingSchema, updatePricingSchema } from "./pricing.validators.js";
+const router = Router();
+router.get("/", requirePermission('pricing:read'), controller.list);
+router.get("/:id", requirePermission('pricing:read'), controller.getById);
+router.post("/", requirePermission('pricing:create'), validateBody(createPricingSchema), controller.create);
+router.put("/:id", requirePermission('pricing:update'), validateBody(updatePricingSchema), controller.update);
+router.delete("/:id", requirePermission('pricing:delete'), controller.remove);
+export { router };

@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./stand.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createStandSchema, updateStandSchema } from "./stand.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('stand:read'), controller.list);
+router.get("/:id", requirePermission('stand:read'), controller.getById);
+router.post("/", requirePermission('stand:create'), validateBody(createStandSchema), controller.create);
+router.put("/:id", requirePermission('stand:update'), validateBody(updateStandSchema), controller.update);
+router.delete("/:id", requirePermission('stand:delete'), controller.remove);
+
+export { router };

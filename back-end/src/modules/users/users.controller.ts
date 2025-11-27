@@ -1,9 +1,15 @@
 import type { Request, Response, NextFunction } from "express";
+import { badRequest } from "../../core/http/errors.js";
 import { usersService } from "./users.service.js";
+import { listUsersSchema } from "./users.validators.js";
 
-export async function list(_req: Request, res: Response, next: NextFunction) {
+export async function list(req: Request, res: Response, next: NextFunction) {
   try {
-    const items = await usersService.list();
+    const parsed = listUsersSchema.safeParse(req.query);
+    if (!parsed.success) {
+      return next(badRequest("Validation error", parsed.error.flatten()));
+    }
+    const items = await usersService.list(parsed.data);
     res.json(items);
   } catch (err) {
     next(err);

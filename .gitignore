@@ -1,9 +1,14 @@
+# common
 node_modules/
 dist/
 .env
 .DS_Store
 *.log
+
+# frontend
 front-end/.next/
 front-end/out/
-node_modules/
-.DS_Store
+front-end/.env.local
+
+# backend
+back-end/.env

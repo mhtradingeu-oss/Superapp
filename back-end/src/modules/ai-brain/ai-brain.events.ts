@@ -1,4 +1,4 @@
-import { publish } from "../../core/events/event-bus.js";
+import { publish, type EventContext } from "../../core/events/event-bus.js";
 import type { AiBrainEventPayload } from "./ai-brain.types.js";
 
 export enum AiBrainEvents {
@@ -7,6 +7,6 @@ export enum AiBrainEvents {
   DELETED = "ai-brain.deleted",
 }
 
-export async function emitAiBrainCreated(payload: AiBrainEventPayload) {
-  await publish(AiBrainEvents.CREATED, payload);
+export async function emitAiBrainCreated(payload: AiBrainEventPayload, context?: EventContext) {
+  await publish(AiBrainEvents.CREATED, payload, context);
 }

@@ -1,0 +1,12 @@
+import { Router } from "express";
+import * as controller from "./finance.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createFinanceSchema, updateFinanceSchema } from "./finance.validators.js";
+const router = Router();
+router.get("/", requirePermission('finance:read'), controller.list);
+router.get("/:id", requirePermission('finance:read'), controller.getById);
+router.post("/", requirePermission('finance:create'), validateBody(createFinanceSchema), controller.create);
+router.put("/:id", requirePermission('finance:update'), validateBody(updateFinanceSchema), controller.update);
+router.delete("/:id", requirePermission('finance:delete'), controller.remove);
+export { router };

@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as controller from "./product.controller.js";
+import { requirePermission } from "../../core/security/rbac.js";
+import { validateBody } from "../../core/http/middleware/validate.js";
+import { createProductSchema, updateProductSchema } from "./product.validators.js";
+
+const router = Router();
+
+router.get("/", requirePermission('product:read'), controller.list);
+router.get("/:id", requirePermission('product:read'), controller.getById);
+router.post("/", requirePermission('product:create'), validateBody(createProductSchema), controller.create);
+router.put("/:id", requirePermission('product:update'), validateBody(updateProductSchema), controller.update);
+router.delete("/:id", requirePermission('product:delete'), controller.remove);
+
+export { router };

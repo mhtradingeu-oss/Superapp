@@ -1,4 +1,4 @@
-import { publish } from "../../core/events/event-bus.js";
+import { publish, type EventContext } from "../../core/events/event-bus.js";
 import type { MarketingEventPayload } from "./marketing.types.js";
 
 export enum MarketingEvents {
@@ -7,6 +7,14 @@ export enum MarketingEvents {
   DELETED = "marketing.deleted",
 }
 
-export async function emitMarketingCreated(payload: MarketingEventPayload) {
-  await publish(MarketingEvents.CREATED, payload);
+export async function emitMarketingCreated(payload: MarketingEventPayload, context?: EventContext) {
+  await publish(MarketingEvents.CREATED, payload, context);
+}
+
+export async function emitMarketingUpdated(payload: MarketingEventPayload, context?: EventContext) {
+  await publish(MarketingEvents.UPDATED, payload, context);
+}
+
+export async function emitMarketingDeleted(payload: MarketingEventPayload, context?: EventContext) {
+  await publish(MarketingEvents.DELETED, payload, context);
 }

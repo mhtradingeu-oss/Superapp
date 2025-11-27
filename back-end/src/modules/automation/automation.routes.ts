@@ -11,5 +11,7 @@ router.get("/:id", requirePermission('automation:read'), controller.getById);
 router.post("/", requirePermission('automation:create'), validateBody(createAutomationSchema), controller.create);
 router.put("/:id", requirePermission('automation:update'), validateBody(updateAutomationSchema), controller.update);
 router.delete("/:id", requirePermission('automation:delete'), controller.remove);
+router.post("/run-scheduled", requirePermission('automation:run'), controller.runScheduled);
+router.post("/:id/run", requirePermission('automation:run'), controller.runNow);
 
 export { router };
